@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class Province extends Model
 {
     use HasFactory;
+
     public function jobs() {
-        $this->hasMany(Job::class);
-    }
-    public function region(){
-        $this->belongsTo(Region::class);
+        return $this->hasMany(Job::class);
     }
 
+    public function region(){
+        return $this->belongsTo(Region::class);
+    }
 }

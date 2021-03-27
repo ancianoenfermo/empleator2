@@ -9,9 +9,19 @@ class Job extends Model
 {
     use HasFactory;
     public function province() {
-        $this->belongsTo(Province::class);
+        return $this->belongsTo(Province::class);
     }
     public function region() {
-        $this->BelongsTo(Region::class);
+        return $this->belongsTo(Region::class);
+    }
+    public function scopeAutonomia($query,$autonomia) {
+       if (trim($autonomia != "")) {
+        $query->where('region_id',$autonomia);
+       }
+    }
+    public function scopeProvincia($query,$provincia) {
+        if(trim($provincia != "")) {
+            $query->where('province_id',$provincia);
+        }
     }
 }

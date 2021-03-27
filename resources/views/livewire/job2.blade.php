@@ -1,0 +1,82 @@
+<!-- This example requires Tailwind CSS v2.0+ -->
+@foreach ($jobs as $job )
+
+<div class="mt-5 bg-white shadow overflow-hidden sm:rounded-lg mr-5">
+    <div class="flex flex-row">
+        <div class="flex flex-col flex-1">
+            <div class="px-4 py-3 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                <strong>{{$job->title}}</strong>
+            </h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                Publicado el {{$job->datePosted}} en {{$job->jobSource}}
+            </p>
+            </div>
+        </div>
+        <div class="m-auto">
+            <span class="text-xs font-semibold inline-block py-1 px-2  rounded-full text-gray-700 bg-gray-50 shadow  last:mr-0 mr-2">
+                <strong>{{$job->localidad}}</strong>
+                @if ($job->provincia != $job->localidad)
+                    ( {{$job->provincia}} )
+                @endif
+            </span>
+
+
+        </div>
+    </div>
+
+
+    <div class="border-t border-gray-200">
+        <div class="flex flex-row">
+            <div class="flex flex-col">
+                <dl>
+                    <div class="bg-gray-50 px-4 py-2  sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500">
+                            <i class="fas fa-file-contract"></i>
+                            Contrato: <strong>{{$job->contract}}</strong>
+                        </dt>
+                    </div>
+
+                    <div class="bg-gray-50 px-4 py-2 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500">
+                            <i class="fas fa-cloud-moon"></i>
+                             Jornada: <strong>{{$job->workingDay}}</strong>
+                        </dt>
+                    </div>
+
+                    <div class="bg-gray-50 px-4 py-2  sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500">
+                            <i class="fas fa-user-friends"></i>
+                            Vacantes: <strong>{{$job->vacancies}}</strong>
+                        </dt>
+                    </div>
+
+                    <div class="bg-gray-50 px-4 py-2  sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500">
+                            <i class="fas fa-euro-sign"></i>
+                            Salario: <strong>{{$job->salario}}</strong>
+                        </dt>
+                    </div>
+                </dl>
+            </div>
+
+            <div class ="flex-1 m-5" >
+                {{$job->excerpt}}
+            </div>
+
+
+        </div>
+    </div>
+
+    <div class="flex justify-end bg-white pt-2 pb-2 border-t ">
+        <button class = "bg-gray-400 hover:bg-gray-700 font-bold rounded pl-3 pr-3 mr-3 text-white">
+            <i class="far fa-eye"></i>
+            Ir a la oferta
+        </button>
+    </div>
+
+</div>
+@endforeach
+<div class="bg-gray-50 px-4 py-3 mt-5 mb-5 mr-2 items-center justify-between border-t border-gray-200 sm:px-6">
+    {{$jobs->links()}}
+</div>
