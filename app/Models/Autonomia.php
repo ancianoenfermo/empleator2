@@ -5,28 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Province extends Model
+class Autonomia extends Model
 {
     use HasFactory;
-
-    public function autonomia() {
-        return $this->belongsTo(Autonomia::class);
-    }
-
-    public function regions(){
-        return $this->hasMany(Region::class);
-    }
-
-
     public function jobs() {
         return $this->hasMany(Job::class);
     }
-
-
-
+    public function provinces() {
+        return $this->hasMany(Province::class);
+    }
 }
-
-
-
-
-

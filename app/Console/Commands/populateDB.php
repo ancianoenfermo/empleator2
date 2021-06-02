@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Autonomia;
 use Illuminate\Console\Command;
 use App\Models\Job;
 use App\Models\Province;
@@ -10,12 +11,18 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
+use Illuminate\Support\Str;
+use Illuminate\Filesystem\Filesystem;
 
 
 
 class populateDB extends Command
 {
-     /**
+
+    /**
      * The name and signature of the console command.
      *
      * @var string
@@ -47,8 +54,9 @@ class populateDB extends Command
      */
     public function handle()
     {
+        $logoFunte = array();
         // Comprueba si hay un nuevo fichero de empleos
-        if(!file_exists(public_path("XOempleos.json"))) {
+        if(!file_exists(public_path("collection.json"))) {
             return 0;
         }
         // Activa el modo mantenimiento
@@ -56,61 +64,150 @@ class populateDB extends Command
         Artisan::call('down',['--redirect'=>null,'--retry'=>null,'--secret'=>null,'--status'=>'503']);
 
         // Lee el json de empleos
-        $path = public_path() . "/XOempleos.json";
+        $path = public_path() . "/collection.json";
         $json = File::get($path);
-        $jsonDecode = json_decode($json, true);
-        $empleos = $jsonDecode['job'];
+        $empleos = json_decode($json, true);
+
+
+
         // Vacia las tablas
+
         $this->vaciaTablas();
+
+
 
         foreach($empleos as $empleo) {
             $this->trata_empleo($empleo);
         }
+
+
         // Desacctiva el modo mantenimiento
         Artisan::call('up');
         $fin = now();
         echo "acabe";
-        File::delete($path);
+        //File::delete($path);
         return 0;
     }
     public function trata_empleo($empleo) {
+        global $logoFuente;
 
-        $region = Region::where('name', $empleo['jobLocation']['autonomia'])->first();
+        $autonomia = Autonomia::where('name', $empleo['autonomia'])->first();
+        if ($autonomia == null) {
+            $newAutonomia = new Autonomia();
+            $newAutonomia->name = $empleo['autonomia'];
+            $autonomia = $newAutonomia;
+            $autonomia->save();
+        }
+
+        $provincia = Province::where('name', $empleo['provincia'])->first();
+        if ($provincia == null) {
+            $newProvincia = new Province();
+            $newProvincia->name = $empleo['provincia'];
+            $newProvincia->autonomia_id = $autonomia->id;
+            $provincia = $newProvincia;
+            $provincia->save();
+        }
+
+        $region = Region::where('name', $empleo['localidad'])->first();
         if ($region == null) {
             $newRegion = new Region;
-            $newRegion->name = $empleo['jobLocation']['autonomia'];
+            $newRegion->name = $empleo['localidad'];
+            $newRegion->province_id = $provincia->id;
             $region = $newRegion;
             $region->save();
         }
 
-        $province = Province::where('name', $empleo['jobLocation']['provincia'])->first();
-
-        if ($province == null) {
-            $newProvince = new Province();
-            $newProvince->name = $empleo['jobLocation']['provincia'];
-            $province = $newProvince;
-        }
-        $province->region_id = $region->id;
-        $province->save();
 
         $newJob = new Job;
-        $newJob->datePosted = $empleo['datePosted'];
+        // DEBEN EXISTIR
+
+        $date = Carbon::createFromFormat('d/m/Y', $empleo['datePosted']);
+        $dateNow = Carbon::now();
+        $cantidadDias = $date->diffInDays($dateNow);
+        $llave = strval($cantidadDias);
+        if (strlen($llave) == 1) {
+            $llave = "0".$llave;
+        }
+        $llave = $llave.uniqid();
+        $newJob->orden = $llave;
+        //echo $llave.PHP_EOL;
+        $newJob->datePosted = $date;
         $newJob->title = $empleo['title'];
-        $newJob->excerpt =  $empleo['excerpt'];
-        $newJob->jobUrl =  $empleo['JobUrl'];
-        $newJob->jobSource = $empleo['JobFuente'];
-        $newJob->logo = $empleo['logo'];
-        $newJob->contract = $empleo['jobData']['contrato'];
-        $newJob->workingDay = $empleo['jobData']['jornada'];
-        $newJob->experience = $empleo['jobData']['experiencia'];
-        $newJob->vacancies = $empleo['jobData']['vacantes'];
-        $newJob->salario = $empleo['jobData']['vacantes'];
-        $newJob->province_id = $province->id;
+
+        $newJob->autonomia = $empleo['autonomia'];
+        $newJob->autonomia_id = $autonomia->id;
+
+        $newJob->provincia = $empleo['provincia'];
+        $newJob->province_id = $provincia->id;
+
+        $newJob->localidad = $empleo['localidad'];
         $newJob->region_id = $region->id;
-        $newJob->autonomia = $empleo['jobLocation']['autonomia'];
-        $newJob->provincia = $empleo['jobLocation']['provincia'];
-        $newJob->localidad = $empleo['jobLocation']['localidad'];
+
+
+        if( isset( $empleo['excerpt'] ) ){
+            $newJob->excerpt = $empleo['excerpt'];
+        }
+
+
+        $newJob->jobUrl =  $empleo['JobUrl'];
+        $newJob->JobFuente = $empleo['JobFuente'];
+        if(!isset($empleo['logo'])) {
+            echo 'SIN LOGO';
+            return;
+        }
+
+        // OPCIONALES
+
+
+
+        if(!isset($logoFuente[$empleo['JobFuente']])) {
+            $logoFuente[$empleo['JobFuente']] = $this->descargarLogo($empleo['logo']);
+            //$logoFuente[$empleo['JobFuente']] = $this->descargarLogo("http://www.cantabriafesmcugt.es/wp-content/uploads/2017/07/descarga.png");
+            //echo $logoFuente[$empleo['JobFuente']].PHP_EOL;
+        }
+
+        $newJob->logo = $logoFuente[$empleo['JobFuente']];
+
+        /*
+        $newJob->logo = $empleo['logo'];
+        */
+        if( isset( $empleo['contrato'] ) ){
+            $newJob->contrato = $empleo['contrato'];;
+        }
+
+
+        if( isset( $empleo['jornada'] ) ){
+            $newJob->jornada = $empleo['jornada'];
+        }
+        if( isset( $empleo['experiencia'] ) ){
+            $newJob->experiencia = $empleo['experiencia'];
+        }
+        if( isset( $empleo['vacantes'] ) ){
+            $newJob->vacantes = $empleo['vacantes'];
+        }
+
+        if( isset( $empleo['salario'] ) ){
+            $newJob->salario = $empleo['salario'];
+        }
+
+        if( isset( $empleo['teletrabajo'] ) ){
+            $newJob->teletrabajo = $empleo['teletrabajo'];
+        }
+
+        if( isset( $empleo['discapacidad'] ) ){
+            $newJob->discapacidad = $empleo['discapacidad'];
+        }
+
+        if( isset( $empleo['practicas'] ) ){
+            $newJob->practicas = $empleo['practicas'];
+        }
+
+        if( isset( $empleo['ett'] ) ){
+            $newJob->ett = $empleo['ett'];
+        }
+
         $newJob->save();
+
     }
 
 
@@ -127,5 +224,28 @@ class populateDB extends Command
         DB::table($name)->truncate();
         }
         DB::statement("SET foreign_key_checks=1");
+        $pathDirectory =storage_path("app/public/logo_images");
+        if (File::exists($pathDirectory)) {
+            File::deleteDirectory($pathDirectory);
+            File::makeDirectory($pathDirectory);
+        } else {
+            File::makeDirectory($pathDirectory);
+        }
     }
+
+    public function descargarLogo($url) {
+        $extension = pathinfo(storage_path($url), PATHINFO_EXTENSION);
+        $filename = Str::uuid().'.'.$extension;
+        $logo = Image::make($url);
+        $logo->resize(null, 35, function ($constraint) {
+            $constraint->aspectRatio();
+        });
+        $logo->save(storage_path('app/public/logo_images/' . $filename));
+        /*
+        Image::make($url)->save(storage_path('app/public/logo_images/' . $filename));
+        */
+        return $filename;
+    }
+
+
 }

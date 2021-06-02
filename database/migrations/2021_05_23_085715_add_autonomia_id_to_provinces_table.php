@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddRegionIdToProvincesTable extends Migration
+class AddAutonomiaIdToProvincesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,8 +14,8 @@ class AddRegionIdToProvincesTable extends Migration
     public function up()
     {
         Schema::table('provinces', function (Blueprint $table) {
-            $table->unsignedBigInteger("region_id")->after("id");
-            $table->foreign("region_id")->references("id")->on("regions");
+            $table->unsignedBigInteger("autonomia_id")->after("id");
+            $table->foreign("autonomia_id")->references("id")->on("autonomias");
         });
     }
 
@@ -27,8 +27,8 @@ class AddRegionIdToProvincesTable extends Migration
     public function down()
     {
         Schema::table('provinces', function (Blueprint $table) {
-            $table->dropForeign("provinces_region_id_foreign");
-            $table->dropColumn("region_id");
+            $table->dropForeign("provinces_autonomia_id_foreign");
+            $table->dropColumn("autonomia_id");
         });
     }
 }

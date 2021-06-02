@@ -9,8 +9,12 @@ class Region extends Model
 {
     use HasFactory;
 
-    public function provinces() {
-        return $this->hasMany(Province::class);
+    public function province() {
+        return $this->belongsTo(Province::class);
+    }
+
+    public function jobs() {
+        return $this->hasMany(Job::class);
     }
 
 }

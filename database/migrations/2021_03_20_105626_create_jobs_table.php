@@ -15,20 +15,25 @@ class CreateJobsTable extends Migration
     {
         Schema::create('jobs', function (Blueprint $table) {
             $table->id();
-            $table->string("datePosted",50);
-            $table->string("title",200);
+            $table->string("orden")->index();
+            $table->dateTime("datePosted");
+            $table->string("title");
             $table->string("autonomia",50);
             $table->string('provincia',50);
             $table->string('localidad',50);
             $table->text("excerpt")->nullable();
-            $table->string("jobUrl");
-            $table->string("jobSource");
+            $table->text("JobUrl");
+            $table->string("JobFuente");
             $table->string("logo")->nullable();
-            $table->string("contract", 50)->nullable();
-            $table->string("workingDay", 50)->nullable();
-            $table->string("experience", 50)->nullable();
-            $table->string("vacancies", 50)->nullable();
+            $table->string("contrato", 150)->nullable();
+            $table->string("jornada", 50)->nullable();
+            $table->string("experiencia", 50)->nullable();
+            $table->string("vacantes", 50)->nullable();
             $table->string("salario", 50)->nullable();
+            $table->boolean("ett")->nullable();
+            $table->boolean("discapacidad")->nullable();
+            $table->boolean("practicas")->nullable();
+            $table->boolean("teletrabajo")->nullable();
             $table->timestamps();
         });
     }
