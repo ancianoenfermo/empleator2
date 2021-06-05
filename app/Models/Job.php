@@ -24,14 +24,17 @@ class Job extends Model
     public function region() {
         return $this->belongsTo(Region::class);
     }
+
     public function scopeAutonomia($query,$autonomia) {
        if (trim($autonomia != "")) {
         $query->where('region_id',$autonomia);
        }
     }
+
     public function scopeProvincia($query,$provincia) {
         if(trim($provincia != "")) {
             $query->where('province_id',$provincia);
         }
     }
+
 }

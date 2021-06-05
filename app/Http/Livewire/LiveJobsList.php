@@ -17,9 +17,10 @@ class LiveJobsList extends Component
     use WithPagination;
 
 
-    public $perPage = 20;
+    public $perPage = 5;
     public $autonomias;
     public $autonomia;
+
 
     public $provincias;
     public $provincia;
@@ -29,31 +30,28 @@ class LiveJobsList extends Component
 
     public function render()
     {
-
-        $jobs = Job::orderBy('orden', 'asc')->paginate($this->perPage);
-        $this->autonomias = Autonomia::all();
-        return view('livewire.live-jobs-list', [
-            'jobs' => $jobs,
-        ]);
-        /*
-        if(!$this->autonomia and !$this->provincia){
-            $jobs = Job::orderBy('datePosted', 'desc')->paginate($this->perPage);
-            if(!$this->autonomias){
-                $this->autonomias = Region::all();
-            }
-            return view('livewire.live-jobs-list', [
-                'jobs' => $jobs,
-            ]);
+        if(!$this->autonomias){
+            $this->autonomias = Autonomia::all();
         }
+
 
         if($this->autonomia) {
-            $jobs = Job::autonomia($this->autonomia)->paginate($this->perPage);
-            $this->provincias = Province::where('region_id',$this->autonomia)->get();
+            $jobs = Job::orderBy('datePosted', 'desc')->where('autonomia_id',$this->autonomia)->paginate($this->perPage);
             return view('livewire.live-jobs-list', [
                 'jobs' => $jobs,
             ]);
         }
-        */
+
+        if(!$this->autonomia and !$this->provincia){
+
+            $jobs = Job::orderBy('datePosted', 'desc')->paginate($this->perPage);
+            return view('livewire.live-jobs-list', [
+                'jobs' => $jobs,
+            ]);
+        }
+
+
+
 
     }
 
@@ -69,5 +67,6 @@ class LiveJobsList extends Component
         $this->perPage = 5;
         $this->autonomia ="";
         $this->provincia = "";
+
     }
 }

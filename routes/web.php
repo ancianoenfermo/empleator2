@@ -3,7 +3,7 @@
 use App\Http\Controllers\generaBD;
 use App\Http\Controllers\inicioController;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Livewire\ShowEmpleos;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -18,10 +18,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 
-Route::get('/',[inicioController::class, 'list'])->name('inicio.list');
+Route::get('/',ShowEmpleos::class);
 /*
-Route::get('/dashboard', function () {
-   return view('dashboard2');
-})->name('dashboard2');
+Route::get('/dashboard', ShowEmpleos::class)->name('dashboard');
 */
+
+/*
 Route::get('/dashboard',[generaBD::class, 'genera'] )->name('dashboard2');
+*/
+

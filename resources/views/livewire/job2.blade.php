@@ -1,8 +1,7 @@
-<!-- This example requires Tailwind CSS v2.0+ -->
-@foreach ($jobs as $job )
 
-    <div class="mt-3 overflow-hidden bg-gray-100 shadow-none">
-        <div class="px-8 py-4 mx-auto mt-16 rounded-lg shadow-2xl dark:bg-gray-800 bg-white">
+@foreach ($jobs as $job )
+    <div class="overflow-hidden bg-gray-100 shadow-none">
+        <div class="px-8  mx-auto mt-16 rounded-lg shadow-2xl dark:bg-gray-800 bg-white">
             <br>
             <div class="flex justify-center -mt-14 md:justify-start">
                 <span class="text-base font-bold inline-block py-1 px-2 text-white shadow-md bg-pink-500">
@@ -126,7 +125,9 @@
 
 
 <div class="bg-gray-50 px-4 py-3 mt-5 mb-5 mr-2 items-center justify-between border-t border-gray-200 sm:px-6">
+
     {{$jobs->links()}}
+
 </div>
 
 
